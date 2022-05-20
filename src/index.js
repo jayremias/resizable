@@ -20,6 +20,12 @@ export default class Resizable {
 
   init() {
     this.handler.addEventListener('mousedown', this.initDrag, false);
+    this.handler.addEventListener('dblclick', this.preventDblClick, false);
+  }
+
+  preventDblClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   setInitialTargetSize() {
@@ -35,6 +41,7 @@ export default class Resizable {
 
   initDrag = (event) => {
     event.preventDefault();
+    event.stopPropagation();
 
     this.clickCounter++;
     this.setInitialPosition(event.clientX, event.clientY);
@@ -49,7 +56,9 @@ export default class Resizable {
     } else {
       clearTimeout(this.timer);
       this.stopDrag();
-      this.autoSize();
+      setTimeout(() => {
+        this.autoSize();
+      }, 200);
       this.clickCounter = 0;
     }
   };
@@ -61,6 +70,13 @@ export default class Resizable {
     } else {
       this.autoSized = true;
       this.target.style.height = 'auto';
+    }
+    if (this.options.callbacks?.onAutoSize) {
+      const height =
+        this.target.style.height === 'auto'
+          ? 'auto'
+          : parseInt(this.target.style.height.replace('px', ''));
+      this.options.callbacks.onAutoSize({ autoSized: this.autoSized, height });
     }
   };
 
